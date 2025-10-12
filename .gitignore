@@ -35,3 +35,21 @@ out/
 
 ### VS Code ###
 .vscode/
+
+#===logs and temporary files===
+logs/
+*.logs
+*.tem
+*.bak
+
+#=== os specific ==
+Thumb.db
+
+#==Ennvironment Files ==
+.env
+.env.local
+.env.production
+.env.development
+## applicationn properties
+src/main/resources/application.properties
+src/main/resources/application.yml

@@ -20,9 +20,12 @@ public class Users {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userId;
     @Column(name="user_name",nullable = false,length = 50)
-    private String name;
+    private String userName;
     private String email;
     private String password;
+    private String fullName;
+    private Set<Integer> followers=new HashSet<>();
+    private Set<Integer> following=new HashSet<>();
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="user_role",joinColumns = @JoinColumn(name="user",referencedColumnName = "userId"),inverseJoinColumns = @JoinColumn(name = "role",referencedColumnName = "roleId"))
     private Set<Role> roles=new HashSet<>();

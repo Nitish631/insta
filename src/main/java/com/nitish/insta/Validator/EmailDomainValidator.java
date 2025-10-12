@@ -1,23 +1,25 @@
 package com.nitish.insta.Validator;
 
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
-
 import java.net.InetAddress;
 import java.util.List;
 
-public class EmailDomainValidator implements ConstraintValidator<ValidateEmail,String> {
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
+public class EmailDomainValidator implements ConstraintValidator<ValidateEmail, String> {
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if(value==null || value.isEmpty()) return false;
-        String regex="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        if(!value.matches(regex))return false;
-        try{
-            String domain=value.substring(value.indexOf("@")+1);
+    public boolean isValid(String email, ConstraintValidatorContext context) {
+        if (email == null || email.isEmpty())
+            return false;
+        String regex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        if (!email.matches(regex))
+            return false;
+        try {
+            String domain = email.substring(email.indexOf("@") + 1);
             String provider=domain.substring(0,domain.lastIndexOf("."));
-            if(matchedProvider(provider)){
+            if( matchedProvider(provider)){
                 InetAddress.getByName(domain);
+                System.out.println("Domain exists: "+domain);
                 return true;
             }
             return false;
@@ -25,8 +27,9 @@ public class EmailDomainValidator implements ConstraintValidator<ValidateEmail,S
             return false;
         }
     }
-    boolean matchedProvider(String provider){
-        List<String> emailProviders= List.of(
+
+    boolean matchedProvider(String provider) {
+        List<String> emailProviders = List.of(
                 "gmail",
                 "yahoo",
                 "outlook",
@@ -43,9 +46,8 @@ public class EmailDomainValidator implements ConstraintValidator<ValidateEmail,S
                 "hushmail",
                 "ntc",
                 "wlink",
-                "ntcnet"
-        );
-        for(String emailProvider:emailProviders){
+                "ntcnet");
+        for(String emailProvider : emailProviders){
             if(provider.equals(emailProvider)) return true;
         }
         return false;

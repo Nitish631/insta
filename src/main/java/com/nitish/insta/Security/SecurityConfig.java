@@ -38,12 +38,13 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(customizer -> customizer.disable())
+                .oauth2Login(oath->oath.loginPage("/google_auth").defaultSuccessUrl("/user", true))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(this.jwtAccessDeniedHandler))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/google_auth","/user").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(this.jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -53,6 +54,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.addAllowedOriginPattern("com.nitish.insta");
         configuration.addAllowedOriginPattern("*");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("GET");

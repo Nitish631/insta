@@ -12,6 +12,7 @@ public class AppConstant {
     public static final Integer ADMIN_ROLE_ID=222;
     public static final long JWT_TOKEN_VALIDITY=15*60*1000;
     public static final String JWT_SECRET_KEY="klkaiuyyjhqbjeguayyggjhhajbhaljfgfauygffjhhjhbjf";
+    public static final String APP_MAME="Instagram";
 
     @Bean
     public ModelMapper modelMapper(){
