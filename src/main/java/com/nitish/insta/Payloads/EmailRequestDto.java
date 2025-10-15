@@ -11,5 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EmailRequestDto {
     private String email;
-    public boolean forReset;
+    private boolean forReset;
 }

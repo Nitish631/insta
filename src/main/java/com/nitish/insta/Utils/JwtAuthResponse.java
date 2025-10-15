@@ -1,7 +1,6 @@
 package com.nitish.insta.Utils;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

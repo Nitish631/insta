@@ -14,9 +14,6 @@ public class TestController {
         return "Success";
     }
 
-    @GetMapping("/google_auth")
-    public void redirectToGoogle(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/oauth2/authorization/google"); // Spring OAuth2 endpoint
-    }
+    
 
 }

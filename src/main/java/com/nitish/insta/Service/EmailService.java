@@ -11,12 +11,14 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendOtpEmail(String toEmail, String otp) {
+    public void sendMessageToEmail(String toEmail, String mes,boolean forOtp) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            String subject=forOtp?"Your OTP code":"New Login Notification";
+            String text=forOtp?String.format("Your OTP for registration in %s is: %s",AppConstant.APP_MAME,mes):String.format("New login to your account in %s. If this wasn't you, please secure your account.",AppConstant.APP_MAME);
             message.setTo(toEmail);
-            message.setSubject("Your OTP code");
-            message.setText(String.format("Your OTP for registration in %s is: %s", AppConstant.APP_MAME, otp));
+            message.setSubject(subject);
+            message.setText(text);
             mailSender.send(message);
         } catch (Exception e) {
             throw new RuntimeException("Failed to send the OTP. Please check the email address.");

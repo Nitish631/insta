@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,5 +61,17 @@ public class UsersServiceImpl implements UsersService {
     public void deleteUser(Integer userId) {
         Users deletedUser=this.usersRepo.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","user Id",userId));
         this.usersRepo.delete(deletedUser);
+    }
+    @Override
+    public void googleLoginRegistration(String email,String providerId,String username){
+        Optional<Users> existingUser=this.usersRepo.findByEmail(email);
+        if(existingUser.isEmpty()){
+            Users user=new Users();
+            user.setEmail(email);
+            user.setFullName(username);
+            user.setUserName(AppConstant.APP_MAME.concat("user"));
+            this.usersRepo.save(user);
+        }
+
     }
 }

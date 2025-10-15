@@ -10,4 +10,5 @@ public interface UsersService {
     UsersDto getUser(Integer userId);
     List<UsersDto> getAllUsers();
     void deleteUser(Integer userId);
+    void googleLoginRegistration(String email,String providerId,String username);
 }

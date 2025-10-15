@@ -24,7 +24,7 @@ import com.nitish.insta.Utils.AppConstant;
 public class OtpService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-    @Scheduled(fixedRate = 2 * 60 * 60 * 1000)
+    @Scheduled(fixedRate = 60 * 1000)
     public void cleanupExpiredOtps() {
         LocalDateTime now = LocalDateTime.now();
         Iterator<Map.Entry<String, TempOtpData>> iterator = otpStore.entrySet().iterator();
@@ -66,16 +66,16 @@ public class OtpService {
     public String sendOtp(String email, boolean isForReset) {
         Optional<Users> existing = usersRepo.findByEmail(email);
         if ((!isForReset) && existing.isPresent()) {
-            throw new RuntimeException("User already registered. Try login of password reset");
+            throw new RuntimeException("User already registered. Try login or password reset");
         }
         if (isForReset && existing.isEmpty()) {
             throw new RuntimeException("No account found with this email");
         }
         String otp = String.format("%d", (100000 + new Random().nextInt(99999)));
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(1).plusSeconds(30);
         String otpToken = generateRandomString(50);
         otpStore.put(otpToken, new TempOtpData(email, otp, false, isForReset, expiry));
-        emailService.sendOtpEmail(email, otp);
+        emailService.sendMessageToEmail(email, otp,true);
         return otpToken;
 
     }

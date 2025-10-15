@@ -20,13 +20,13 @@ public class JwtTokenHelper {
     public String getUserNameFromToken(String token){
         return getClaimFromToken(token, Claims::getSubject);
     }
-    public  String generateToken(UserDetails userDetails){
+    public  String generateToken(String username){
         Map<String,Object> claims=new HashMap<>();
-        return doGenerateToken(claims,userDetails.getUsername());
+        return doGenerateToken(claims,username);
     }
-    public Boolean validateToken(String token,UserDetails userDetails){
-        final String username=getUserNameFromToken(token);
-        return (username.equals(userDetails.getUsername())&& !isTokenExpired(token));
+    public Boolean validateToken(String token,String username){
+        final String tokenUsername=getUserNameFromToken(token);
+        return (username.equals(username)&& !isTokenExpired(token));
     }
     private SecretKey getSigningKey(){
         byte[] keyBytes= Decoders.BASE64.decode(AppConstant.JWT_SECRET_KEY);

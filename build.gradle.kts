@@ -24,11 +24,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-    implementation("com.twilio.sdk:twilio:8.31.1")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-validation") // For @Valid and validation annotations
-
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("com.google.api-client:google-api-client:2.1.0")
+    implementation("com.google.http-client:google-http-client-jackson2:1.45.0")
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
