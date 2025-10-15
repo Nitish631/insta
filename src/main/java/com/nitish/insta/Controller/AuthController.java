@@ -8,20 +8,16 @@ import com.nitish.insta.Payloads.OtpRequestDto;
 import com.nitish.insta.Payloads.PasswordRequestDto;
 import com.nitish.insta.Payloads.PasswordRequestRegisterUserDto;
 import com.nitish.insta.Repository.UsersRepo;
-// import com.nitish.insta.Payloads.UsersDto;
 import com.nitish.insta.Security.JwtTokenHelper;
 import com.nitish.insta.Service.EmailService;
 import com.nitish.insta.Service.GoogleTokenVerifierService;
 import com.nitish.insta.Service.OtpService;
 import com.nitish.insta.Service.UsersService;
-// import com.nitish.insta.Service.UsersService;
 import com.nitish.insta.Utils.ApiResponse;
 import com.nitish.insta.Utils.JwtAuthRequest;
 import com.nitish.insta.Utils.JwtAuthResponse;
-
-// import jakarta.validation.Valid;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -51,7 +47,7 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
     @PostMapping("/google_auth")
-    public ResponseEntity<JwtAuthResponse> googleRegisterLogin(@RequestBody JwtAuthRequest emailToken) throws Exception {
+    public ResponseEntity<JwtAuthResponse> googleRegisterLogin(@Valid @RequestBody JwtAuthRequest emailToken) throws Exception {
         Payload payload=googleTokenVerifierService.verifyToken(emailToken.getPassword());
         String email=payload.getEmail();
         String providerId=payload.getSubject();
@@ -62,13 +58,13 @@ public class AuthController {
         if(email!=emailToken.getUsername()){
             throw new ApiException("Email id's do not match. Try again.");
         }
-        this.usersService.googleLoginRegistration(email, providerId, username);
+        this.usersService.googleLoginRegistration(email, emailToken.getPassword(), username);
         String jwtToken=jwtTokenHelper.generateToken(email);
         return ResponseEntity.ok(new JwtAuthResponse(jwtToken));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> createToken(@RequestBody JwtAuthRequest request) throws Exception {
+    public ResponseEntity<JwtAuthResponse> createToken(@Valid @RequestBody JwtAuthRequest request) throws Exception {
         this.authenticate(request.getUsername(), request.getPassword());
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
         String token = this.jwtTokenHelper.generateToken(userDetails.getUsername());
@@ -92,8 +88,9 @@ public class AuthController {
 //        return ResponseEntity.ok(new JwtAuthResponse(token));
 //    }
     @PostMapping("/register")
-    public ResponseEntity<JwtAuthResponse> registerUser(@RequestBody PasswordRequestRegisterUserDto request)
+    public ResponseEntity<JwtAuthResponse> registerUser(@Valid @RequestBody PasswordRequestRegisterUserDto request)
             throws Exception {
+                System.out.println("EMAIL:"+request.getEmail());
         this.otpService.setPassword(request.getOtpToken(), request.getEmail(), request.getPassword(),
                 request.getFullName());
         this.authenticate(request.getEmail(), request.getPassword());
@@ -104,20 +101,20 @@ public class AuthController {
     }
 
     @PostMapping("/request-otp")
-    public ResponseEntity<ApiResponse> requestOtp(@RequestBody EmailRequestDto request) {
-        System.out.println("IS FOR TESET: "+request.isForReset());
+    public ResponseEntity<ApiResponse> requestOtp(@Valid @RequestBody EmailRequestDto request) {
         String message = otpService.sendOtp(request.getEmail(),request.isForReset());
         return ResponseEntity.ok(new ApiResponse(message));
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse> veriryOtp(@RequestBody OtpRequestDto request) {
+    public ResponseEntity<ApiResponse> veriryOtp(@Valid @RequestBody OtpRequestDto request) {
+        System.out.println("VERIFY OTP CALLED");
         String message = otpService.verifyOtp(request.getOtpToken(), request.getEmail(), request.getOtp());
         return ResponseEntity.ok(new ApiResponse(message));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<JwtAuthResponse> forgotpassword(@RequestBody PasswordRequestDto request)throws Exception {
+    public ResponseEntity<JwtAuthResponse> forgotpassword(@Valid @RequestBody PasswordRequestDto request)throws Exception {
         this.otpService.setPassword(request.getOtpToken(), request.getEmail(), request.getPassword(), null);
         JwtAuthRequest request2 = new JwtAuthRequest();
         request2.setPassword(request.getPassword());

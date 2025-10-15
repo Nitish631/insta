@@ -24,7 +24,7 @@ import com.nitish.insta.Utils.AppConstant;
 public class OtpService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-    @Scheduled(fixedRate = 60 * 1000)
+    @Scheduled(fixedRate = 3*60 * 1000)
     public void cleanupExpiredOtps() {
         LocalDateTime now = LocalDateTime.now();
         Iterator<Map.Entry<String, TempOtpData>> iterator = otpStore.entrySet().iterator();
@@ -60,7 +60,7 @@ public class OtpService {
     private UsersService usersService;
     private final Map<String, TempOtpData> otpStore = new HashMap<>();
 
-    private record TempOtpData(String email, String otp, boolean verified, boolean isForReset, LocalDateTime expiry) {
+    private record TempOtpData(String otpToken, String otp, boolean verified, boolean isForReset, LocalDateTime expiry) {
     }
 
     public String sendOtp(String email, boolean isForReset) {
@@ -74,35 +74,43 @@ public class OtpService {
         String otp = String.format("%d", (100000 + new Random().nextInt(99999)));
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(1).plusSeconds(30);
         String otpToken = generateRandomString(50);
-        otpStore.put(otpToken, new TempOtpData(email, otp, false, isForReset, expiry));
+        try{
+            otpStore.remove(email);
+            System.out.println("OLD OTP REQUEST REMOVED");
+        }catch (Exception e){
+            System.out.println("NO OLD OTP REQUEST. FIRST REQUEST");
+        }
+        otpStore.put(email, new TempOtpData(otpToken, otp, false, isForReset, expiry));
         emailService.sendMessageToEmail(email, otp,true);
         return otpToken;
 
     }
 
     public String verifyOtp(String otpToken, String email, String otp) {
-        TempOtpData data = otpStore.get(otpToken);
+        TempOtpData data = otpStore.get(email);
         if (data == null)
             throw new RuntimeException("No OTP found for this email.");
-        if (data.email() == null || !data.email.equals(email))
-            throw new RuntimeException("No OTP found for this email");
+        if (data.otpToken == null || !data.otpToken.equals(otpToken))
+            throw new RuntimeException("No OTP found for this token");
         if (LocalDateTime.now().isAfter(data.expiry)) {
-            otpStore.remove(otpToken);
+            otpStore.remove(email);
             throw new RuntimeException("OTP expired . Please request again");
         }
+        LocalDateTime expiry=LocalDateTime.now().plusMinutes(5);
         if (!data.otp().equals(otp))
             throw new RuntimeException("Invalid OTP");
-        otpStore.remove(otpToken);
-        otpStore.put(otpToken, new TempOtpData(data.email(), otp, true, data.isForReset, data.expiry));
+        otpStore.remove(email);
+        otpStore.put(email, new TempOtpData(data.otpToken, otp, true, data.isForReset, expiry));
+        System.out.println("OTP VERIFIED");
         return otpToken;
     }
 
     public String setPassword(String otpToken, String email, String password, String fullName) {
-        TempOtpData data = otpStore.get(otpToken);
+        TempOtpData data = otpStore.get(email);
         if (data == null)
-            throw new RuntimeException("Please verifyy OTP first");
-        if (data.email() == null || !data.email.equals(email))
-            throw new RuntimeException("No OTP found for this email");
+            throw new RuntimeException("Too late sesson expired. Please request again");
+        if (data.otpToken == null || !data.otpToken.equals(otpToken))
+            throw new RuntimeException("No OTP found for this otp token");
 
         if (!data.verified())
             throw new RuntimeException("OTP not verified");

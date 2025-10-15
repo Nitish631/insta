@@ -63,15 +63,32 @@ public class UsersServiceImpl implements UsersService {
         this.usersRepo.delete(deletedUser);
     }
     @Override
-    public void googleLoginRegistration(String email,String providerId,String username){
+    public void googleLoginRegistration(String email,String password,String username){
         Optional<Users> existingUser=this.usersRepo.findByEmail(email);
         if(existingUser.isEmpty()){
             Users user=new Users();
             user.setEmail(email);
             user.setFullName(username);
+            user.setPassword(this.passwordEncoder.encode(password));
             user.setUserName(AppConstant.APP_MAME.concat("user"));
             this.usersRepo.save(user);
         }
 
+    }
+
+    @Override
+    public String changeUserName(String userName, String email) {
+        Users users=this.usersRepo.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
+        users.setUserName(userName);
+        this.usersRepo.save(users);
+        return "success";
+    }
+
+    @Override
+    public String changeFullName(String fullName, String email) {
+        Users users=this.usersRepo.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
+        users.setFullName(fullName);
+        this.usersRepo.save(users);
+        return "success";
     }
 }

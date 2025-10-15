@@ -21,6 +21,7 @@ public class EmailService {
             message.setText(text);
             mailSender.send(message);
         } catch (Exception e) {
+            System.out.println("FAILED TO SEND EMAIL");
             throw new RuntimeException("Failed to send the OTP. Please check the email address.");
         }
     }

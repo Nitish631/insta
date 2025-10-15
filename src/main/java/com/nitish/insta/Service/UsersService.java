@@ -11,4 +11,6 @@ public interface UsersService {
     List<UsersDto> getAllUsers();
     void deleteUser(Integer userId);
     void googleLoginRegistration(String email,String providerId,String username);
+    String changeUserName(String userName,String email);
+    String changeFullName(String fullName,String email);
 }
