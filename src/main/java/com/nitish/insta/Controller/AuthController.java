@@ -1,16 +1,20 @@
 package com.nitish.insta.Controller;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.nitish.insta.Entities.Device;
+import com.nitish.insta.Entities.Users;
 import com.nitish.insta.Exception.ApiException;
 import com.nitish.insta.Exception.ResourceNotFoundException;
 import com.nitish.insta.Payloads.EmailRequestDto;
 import com.nitish.insta.Payloads.OtpRequestDto;
 import com.nitish.insta.Payloads.PasswordRequestDto;
 import com.nitish.insta.Payloads.PasswordRequestRegisterUserDto;
+import com.nitish.insta.Payloads.UserPasswordDto;
 import com.nitish.insta.Repository.UsersRepo;
 import com.nitish.insta.Security.JwtTokenHelper;
 import com.nitish.insta.Service.EmailService;
 import com.nitish.insta.Service.GoogleTokenVerifierService;
+import com.nitish.insta.Service.NotificationForAuthentication;
 import com.nitish.insta.Service.OtpService;
 import com.nitish.insta.Service.UsersService;
 import com.nitish.insta.Utils.ApiResponse;
@@ -45,64 +49,87 @@ public class AuthController {
     @Autowired
     private GoogleTokenVerifierService googleTokenVerifierService;
     @Autowired
+    private NotificationForAuthentication notificationForAuthentication;
+    @Autowired
     private EmailService emailService;
-    @PostMapping("/google_auth")
-    public ResponseEntity<JwtAuthResponse> googleRegisterLogin(@Valid @RequestBody JwtAuthRequest emailToken) throws Exception {
-        Payload payload=googleTokenVerifierService.verifyToken(emailToken.getPassword());
-        String email=payload.getEmail();
-        String providerId=payload.getSubject();
-        String username=(String) payload.get("name");
-        if(email==null || providerId==null){
+
+    @PostMapping("/google_auth") // YAHA
+    public ResponseEntity<JwtAuthResponse> googleRegisterLogin(@Valid @RequestBody JwtAuthRequest emailToken)
+            throws Exception {
+        Payload payload = googleTokenVerifierService.verifyToken(emailToken.getPassword());
+        String email = payload.getEmail();
+        String providerId = payload.getSubject();
+        String username = (String) payload.get("name");
+        if (email == null || providerId == null) {
             throw new ApiException("Unable to login with google. Try again.");
         }
-        if(email!=emailToken.getUsername()){
+        if (!email.equals(emailToken.getUsername())) {
             throw new ApiException("Email id's do not match. Try again.");
         }
-        this.usersService.googleLoginRegistration(email, emailToken.getPassword(), username);
-        String jwtToken=jwtTokenHelper.generateToken(email);
+        Device device = new Device();
+        device.setDeviceId(emailToken.getDeviceId());
+        device.setDeviceName(emailToken.getDeviceName());
+        device.setNotificationToken(emailToken.getNotificationToken());
+        device.setOs(emailToken.getOs());
+        notificationForAuthentication.send(emailToken.getNotificationToken(), email, username,
+                "You login to our app . If its not please report", "Google login notification");
+        String paswrod = emailToken.getPassword().substring(0, 50);
+        this.usersService.googleLoginRegistration(email, paswrod, username, device);
+        String jwtToken = jwtTokenHelper.generateToken(email);
         return ResponseEntity.ok(new JwtAuthResponse(jwtToken));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> createToken(@Valid @RequestBody JwtAuthRequest request) throws Exception {
+    @PostMapping("/login") // YAHA
+    public ResponseEntity<JwtAuthResponse> liginUser(@Valid @RequestBody JwtAuthRequest request) throws Exception {
+        this.authenticate(request.getUsername(), request.getPassword());
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
+        Device device = new Device();
+        device.setDeviceId(request.getDeviceId());
+        device.setDeviceName(request.getDeviceName());
+        device.setNotificationToken(request.getNotificationToken());
+        device.setOs(request.getOs());
+        this.usersService.loginUser(device, request.getUsername());
+        Users user = this.usersRepo.findByEmail(request.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getUsername()));
+        String token = this.jwtTokenHelper.generateToken(userDetails.getUsername());
+        notificationForAuthentication.send(request.getNotificationToken(), request.getUsername(), user.getFullName(),
+                "You login to our app . If its not please report", "Login notification");
+        this.emailService.sendMessageToEmail(request.getUsername(), "", false);
+        return ResponseEntity.ok(new JwtAuthResponse(token));
+    }
+
+    @PostMapping("/login-auto")
+    public ResponseEntity<JwtAuthResponse> createToken(@Valid @RequestBody UserPasswordDto request) throws Exception {
         this.authenticate(request.getUsername(), request.getPassword());
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
         String token = this.jwtTokenHelper.generateToken(userDetails.getUsername());
-        this.emailService.sendMessageToEmail(request.getUsername(),"",false);
         return ResponseEntity.ok(new JwtAuthResponse(token));
     }
-//    @PostMapping("/login-email")
-//    public ResponseEntity<JwtAuthResponse> loginWithEmail(@RequestBody String email)throws ResourceNotFoundException{
-//        this.usersRepo.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
-//        String token=this.jwtTokenHelper.generateToken(email);
-//        return ResponseEntity.ok(new JwtAuthResponse(token));
-//    }
-//    @PostMapping("/login-password")
-//    public ResponseEntity<JwtAuthResponse> loginWithPassword(@RequestBody ManualLoginRequest request)throws Exception{
-//        Boolean valid=this.jwtTokenHelper.validateToken(request.getToken(),request.getUsername());
-//        if(!valid){
-//            throw new ApiException("Invalid token");
-//        }
-//        this.authenticate(request.getUsername(), request.getPassword());
-//        String token=this.jwtTokenHelper.generateToken(request.getUsername());
-//        return ResponseEntity.ok(new JwtAuthResponse(token));
-//    }
-    @PostMapping("/register")
+
+    @PostMapping("/register") // YAHA
     public ResponseEntity<JwtAuthResponse> registerUser(@Valid @RequestBody PasswordRequestRegisterUserDto request)
             throws Exception {
-                System.out.println("EMAIL:"+request.getEmail());
-        this.otpService.setPassword(request.getOtpToken(), request.getEmail(), request.getPassword(),
+        Device device = new Device();
+        device.setDeviceId(request.getDeviceId());
+        device.setDeviceName(request.getDeviceName());
+        device.setNotificationToken(request.getNotificationToken());
+        device.setOs(request.getOs());
+        this.otpService.setPassword(device, request.getOtpToken(), request.getEmail(), request.getPassword(),
                 request.getFullName());
         this.authenticate(request.getEmail(), request.getPassword());
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getEmail());
         String token = this.jwtTokenHelper.generateToken(userDetails.getUsername());
-        this.emailService.sendMessageToEmail(request.getEmail(),"",false);
+        Users user = this.usersRepo.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
+        notificationForAuthentication.send(request.getNotificationToken(), request.getEmail(), user.getFullName(),
+                "You Registered to our app . If its not please report", "New registration notification");
+        this.emailService.sendMessageToEmail(request.getEmail(), "", false);
         return new ResponseEntity(new JwtAuthResponse(token), HttpStatus.CREATED);
     }
 
     @PostMapping("/request-otp")
     public ResponseEntity<ApiResponse> requestOtp(@Valid @RequestBody EmailRequestDto request) {
-        String message = otpService.sendOtp(request.getEmail(),request.isForReset());
+        String message = otpService.sendOtp(request.getEmail(), request.isForReset());
         return ResponseEntity.ok(new ApiResponse(message));
     }
 
@@ -113,20 +140,31 @@ public class AuthController {
         return ResponseEntity.ok(new ApiResponse(message));
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<JwtAuthResponse> forgotpassword(@Valid @RequestBody PasswordRequestDto request)throws Exception {
-        this.otpService.setPassword(request.getOtpToken(), request.getEmail(), request.getPassword(), null);
+    @PostMapping("/forgot-password") // YAHA
+    public ResponseEntity<JwtAuthResponse> forgotpassword(@Valid @RequestBody PasswordRequestDto request)
+            throws Exception {
+        Device device = new Device();
+        device.setDeviceId(request.getDeviceId());
+        device.setDeviceName(request.getDeviceName());
+        device.setNotificationToken(request.getNotificationToken());
+        device.setOs(request.getOs());
+        this.otpService.setPassword(device, request.getOtpToken(), request.getEmail(), request.getPassword(), null);
         JwtAuthRequest request2 = new JwtAuthRequest();
         request2.setPassword(request.getPassword());
         request2.setUsername(request.getEmail());
-        return createToken(request2);
+        Users user = this.usersRepo.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
+        notificationForAuthentication.send(request.getNotificationToken(), request.getEmail(), user.getFullName(),
+                "You Registered to our app . If its not please report", "New registration notification");
+        return liginUser(request2);
     }
 
     private void authenticate(String username, String password) throws Exception {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 username, password);
         try {
-            this.usersRepo.findByEmail(username).orElseThrow(()->new ResourceNotFoundException("User","email",username));
+            this.usersRepo.findByEmail(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", username));
             this.authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         } catch (BadCredentialsException e) {
             throw new ApiException("Invalid password");

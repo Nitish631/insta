@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation") // For @Valid and validation annotations
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("com.google.api-client:google-api-client:2.1.0")
+    implementation("com.google.firebase:firebase-admin:9.2.0")
     implementation("com.google.http-client:google-http-client-jackson2:1.45.0")
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")

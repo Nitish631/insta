@@ -14,9 +14,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.nitish.insta.Entities.Device;
 import com.nitish.insta.Entities.Users;
 import com.nitish.insta.Exception.ResourceNotFoundException;
 import com.nitish.insta.Payloads.UsersDto;
+import com.nitish.insta.Repository.RoleRepo;
 import com.nitish.insta.Repository.UsersRepo;
 import com.nitish.insta.Utils.AppConstant;
 
@@ -54,6 +56,8 @@ public class OtpService {
 
     @Autowired
     private UsersRepo usersRepo;
+    @Autowired
+    private RoleRepo roleRepo;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -105,7 +109,7 @@ public class OtpService {
         return otpToken;
     }
 
-    public String setPassword(String otpToken, String email, String password, String fullName) {
+    public String setPassword(Device device,String otpToken, String email, String password, String fullName) {
         TempOtpData data = otpStore.get(email);
         if (data == null)
             throw new RuntimeException("Too late sesson expired. Please request again");
@@ -116,10 +120,11 @@ public class OtpService {
             throw new RuntimeException("OTP not verified");
         if (data.isForReset) {
             Users user = usersRepo.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+            .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
             user.setPassword(passwordEncoder.encode(password));
             usersRepo.save(user);
             otpStore.remove(otpToken);
+            usersService.loginUser(device, email);
             return "Password reset successfully";
         } else {
             UsersDto usersDto = new UsersDto();
@@ -127,7 +132,7 @@ public class OtpService {
             usersDto.setPassword(password);
             usersDto.setFullName(fullName);
             usersDto.setUserName(AppConstant.APP_MAME.concat(" user"));
-            usersService.registerNewUser(usersDto);
+            usersService.registerNewUser(usersDto,device);
             otpStore.remove(otpToken);
             return "User register successfully!";
         }

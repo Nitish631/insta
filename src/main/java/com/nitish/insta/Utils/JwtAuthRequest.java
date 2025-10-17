@@ -11,4 +11,8 @@ public class JwtAuthRequest {
     @ValidateEmail
     private String username;
     private String password;
+    private String deviceId;
+    private String deviceName;
+    private String os;
+    private String notificationToken;
 }
