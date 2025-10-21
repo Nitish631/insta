@@ -14,13 +14,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.nitish.insta.Configuration.AppConstant;
 import com.nitish.insta.Entities.Device;
 import com.nitish.insta.Entities.Users;
 import com.nitish.insta.Exception.ResourceNotFoundException;
 import com.nitish.insta.Payloads.UsersDto;
 import com.nitish.insta.Repository.RoleRepo;
 import com.nitish.insta.Repository.UsersRepo;
-import com.nitish.insta.Utils.AppConstant;
 
 @Service
 public class OtpService {

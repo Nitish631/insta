@@ -24,17 +24,21 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-validation") // For @Valid and validation annotations
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-    implementation("com.google.api-client:google-api-client:2.1.0")
+    //CREATE SMTP SYSTEM
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    // implementation("org.springframework.boot:spring-boot-starter-oauth2-client") // OAUTH2 LOGIN
+    //FIREBASE NOTIFICATION
     implementation("com.google.firebase:firebase-admin:9.2.0")
+    //TO VERIRY THE GOOGLE ID TOKEN
+    implementation("com.google.api-client:google-api-client:2.1.0")
     implementation("com.google.http-client:google-http-client-jackson2:1.45.0")
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
+    //Cloudinary
+    implementation("com.cloudinary:cloudinary-http44:1.37.0")
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

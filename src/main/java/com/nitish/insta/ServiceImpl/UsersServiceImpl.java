@@ -1,5 +1,6 @@
 package com.nitish.insta.ServiceImpl;
 
+import com.nitish.insta.Configuration.AppConstant;
 import com.nitish.insta.Entities.Device;
 import com.nitish.insta.Entities.Role;
 import com.nitish.insta.Entities.Users;
@@ -9,7 +10,7 @@ import com.nitish.insta.Repository.DeviceRepository;
 import com.nitish.insta.Repository.RoleRepo;
 import com.nitish.insta.Repository.UsersRepo;
 import com.nitish.insta.Service.UsersService;
-import com.nitish.insta.Utils.AppConstant;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,7 +50,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public UsersDto updateUser(UsersDto usersDto, Integer userId) {
+    public UsersDto updateUser(UsersDto usersDto, Long userId) {
         Users user = this.usersRepo.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", "id", userId));
         this.modelMapper.map(usersDto, user);
@@ -59,7 +60,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public UsersDto getUser(Integer userId) {
+    public UsersDto getUser(Long userId) {
         Users user = this.usersRepo.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "user Id", userId));
         return this.modelMapper.map(user, UsersDto.class);
@@ -72,7 +73,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public void deleteUser(Integer userId) {
+    public void deleteUser(Long userId) {
         Users deletedUser = this.usersRepo.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "user Id", userId));
         this.usersRepo.delete(deletedUser);
@@ -141,4 +142,5 @@ public class UsersServiceImpl implements UsersService {
         user.getDevices().add(deviceToSave);
         this.usersRepo.save(user);
     }
+
 }

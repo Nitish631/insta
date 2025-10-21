@@ -1,12 +1,13 @@
 package com.nitish.insta.Security;
 
-import com.nitish.insta.Utils.AppConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.nitish.insta.Configuration.AppConstant;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
