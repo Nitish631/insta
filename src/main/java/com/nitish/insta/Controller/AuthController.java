@@ -56,6 +56,7 @@ public class AuthController {
     @PostMapping("/google_auth") // YAHA
     public ResponseEntity<JwtAuthResponse> googleRegisterLogin(@Valid @RequestBody JwtAuthRequest emailToken)
             throws Exception {
+                System.out.println("Google auth is triggred");
         Payload payload = googleTokenVerifierService.verifyToken(emailToken.getPassword());
         String email = payload.getEmail();
         String providerId = payload.getSubject();

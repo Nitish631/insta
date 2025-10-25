@@ -37,6 +37,7 @@ public class Users {
     private String bio;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean accountPrivate = false;
 
     @CreationTimestamp
@@ -52,6 +53,7 @@ public class Users {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -60,18 +62,22 @@ public class Users {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "device_id")
     )
+    @Builder.Default
     private Set<Device> devices = new HashSet<>();
 
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profile_image_id", referencedColumnName = "id")
     private FileResource profileImage;
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private Set<FileResource> profilePictures = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private Set<Follow> following = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private Set<Follow> followers = new HashSet<>();
     private Date lastTimeActive;
 }

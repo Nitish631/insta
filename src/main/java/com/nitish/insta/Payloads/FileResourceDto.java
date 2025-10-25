@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class FileResourceDto {
-    private long id;
+    private Long id;
     private String fileName;
     private String fileUrl;
     private String publicId;

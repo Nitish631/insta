@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,4 +25,7 @@ public class UsersDto {
     @Size(min=6,max = 20,message = "Password must be between 6 characters to 20 characters")
     private String password;
     private String fullName;
+    private String bio;
+    private boolean accountPrivate;
+//    private Set<Integer> roleIds;
 }

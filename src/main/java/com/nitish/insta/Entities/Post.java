@@ -2,19 +2,7 @@ package com.nitish.insta.Entities;
 
 import java.time.Instant;
 import java.util.*;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -24,40 +12,71 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Post {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Integer postId;
-    @Column(name = "title",length = 100,nullable = false)
+    private Long postId;
+
     private String title;
+
     @Column(length = 10000)
     private String contentDescription;
+
     @CreationTimestamp
-    @Column(nullable = false,updatable = false)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
     @UpdateTimestamp
     private Instant updatedAt;
-    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    private Set<FileResource> videosAndImages=new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<FileResource> files = new HashSet<>();
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<VideoAudio>videoAudios=new HashSet<>();
+    @Builder.Default
+    private boolean reels=false;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinTable(name = "mainCategory_post",joinColumns = @JoinColumn(name="post_id"),inverseJoinColumns = @JoinColumn(name="mainCategory_id"))
-    private Set<MainCategory> mainCategories;
+    @JoinTable(
+            name = "mainCategory_post",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "mainCategory_id")
+    )
+    @Builder.Default
+    private Set<MainCategory> mainCategories = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinTable(name = "subCategory_post",joinColumns = @JoinColumn(name="post_id"),inverseJoinColumns = @JoinColumn(name="subCategory_id"))
-    private Set<SubCategory> subCategories;
-    @ManyToMany(fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-    @JoinTable(name="badMainCategory_post",joinColumns = @JoinColumn(name="post_id"),inverseJoinColumns = @JoinColumn(name="badMainCategory_id"))
-    private List<BadMainCategories> badMainCategoriesList=new ArrayList<>();
-    @ManyToMany(fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-    @JoinTable(name="badSubCategory_post",joinColumns = @JoinColumn(name="post_id"),inverseJoinColumns = @JoinColumn(name="badSubCategory_id"))
-    private List<BadSubCategories> badSubCategoriesList=new ArrayList<>();
+    @JoinTable(
+            name = "subCategory_post",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "subCategory_id")
+    )
+    @Builder.Default
+    private Set<SubCategory> subCategories = new HashSet<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private Users user;
-    @OneToMany(mappedBy = "post",cascade = CascadeType.ALL,orphanRemoval = true)
-    private Set<Comment> comments=new HashSet<>();
-    private boolean postPrivate=false;
-    private boolean allowComments=true;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Comment> comments = new HashSet<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Report> reports = new HashSet<>();
+    @Builder.Default
+    private boolean postPrivate = false;
+    @Builder.Default
+    private boolean allowComments = true;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Reaction> reactions = new HashSet<>();
 }

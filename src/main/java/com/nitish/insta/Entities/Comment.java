@@ -16,10 +16,10 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     @Column(name="comment_id")
-    private int commentId;
+    private Long commentId;
     private String content;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="post_id",referencedColumnName = "postId")
+    @JoinColumn(name="post_id")
     private Post post;
     @ManyToOne
     @JoinColumn(name="user_id",referencedColumnName = "userId")
